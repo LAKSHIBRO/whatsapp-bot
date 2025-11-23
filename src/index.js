@@ -4,9 +4,42 @@ const { Client, LocalAuth } = pkg;
 import qrcode from 'qrcode-terminal';
 import ContextManager from './contextManager.js';
 import AIService from './aiService.js';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+import { mkdirSync, existsSync } from 'fs';
 
 // Load environment variables
 dotenv.config();
+
+// Get directory paths
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const projectRoot = join(__dirname, '..');
+
+// Create required directories
+const dataDir = join(projectRoot, 'data');
+const authDir = join(dataDir, '.wwebjs_auth');
+
+console.log('🔧 Setting up directories...');
+console.log(`📁 Data directory: ${dataDir}`);
+console.log(`🔐 Auth directory: ${authDir}`);
+
+if (!existsSync(dataDir)) {
+    mkdirSync(dataDir, { recursive: true });
+    console.log('✅ Created data directory');
+}
+
+if (!existsSync(authDir)) {
+    mkdirSync(authDir, { recursive: true });
+    console.log('✅ Created auth directory');
+}
+
+// Verify environment variables
+if (!process.env.GEMINI_API_KEY) {
+    console.error('❌ ERROR: GEMINI_API_KEY not found in environment variables');
+    console.error('Please create a .env file with your GEMINI_API_KEY');
+    process.exit(1);
+}
 
 // Initialize services
 const contextManager = new ContextManager();
@@ -15,11 +48,19 @@ const aiService = new AIService();
 // Initialize WhatsApp client with persistent session in data directory
 const client = new Client({
     authStrategy: new LocalAuth({
-        dataPath: './data/.wwebjs_auth'
+        dataPath: authDir
     }),
     puppeteer: {
         headless: true,
-        args: ['--no-sandbox', '--disable-setuid-sandbox']
+        args: [
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+            '--disable-dev-shm-usage',
+            '--disable-accelerated-2d-canvas',
+            '--no-first-run',
+            '--no-zygote',
+            '--disable-gpu'
+        ]
     }
 });
 

@@ -8,8 +8,9 @@ services:
     env_file:
       - .env
     volumes:
-      # Mount entire data directory instead of individual files
+      # Mount data directory for persistence (includes auth and database)
       - ./data:/app/data
     environment:
       - NODE_ENV=production
       - DB_PATH=/app/data/conversations.db
+    shm_size: '2gb' # Shared memory for Chrome/Chromium

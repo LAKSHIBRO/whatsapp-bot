@@ -41,6 +41,11 @@ fi
 echo "📥 Pulling latest code..."
 git pull origin main || echo "Note: First deployment or no remote set"
 
+# Create data directories if they don't exist
+echo "📁 Creating required directories..."
+mkdir -p data/.wwebjs_auth
+chmod -R 755 data
+
 # Check if .env exists
 if [ ! -f .env ]; then
     echo "⚠️  Warning: .env file not found!"

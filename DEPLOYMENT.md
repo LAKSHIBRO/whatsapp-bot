@@ -230,12 +230,28 @@ docker-compose config | grep restart
 
 **Bot won't start:**
 ```bash
-# Check logs
+# Check logs for detailed error messages
 docker-compose logs
 
-# Rebuild
+# Rebuild from scratch
 docker-compose down
 docker-compose build --no-cache
+docker-compose up
+```
+
+**Chromium/Chrome failed to start:**
+```bash
+# Verify Chromium is installed
+docker-compose exec whatsapp-bot chromium-browser --version
+
+# Check if shared memory is configured
+docker-compose config | grep shm_size
+
+# If shm_size is missing, add to docker-compose.yml:
+# shm_size: '2gb'
+
+# Restart with increased verbosity
+docker-compose down
 docker-compose up
 ```
 
@@ -243,12 +259,29 @@ docker-compose up
 ```bash
 # View logs with timestamps
 docker-compose logs -f --timestamps
+
+# Check if bot is stuck at initialization
+docker-compose exec whatsapp-bot ps aux
+```
+
+**Permission denied errors:**
+```bash
+# Fix ownership of data directory on host
+sudo chown -R $USER:$USER ./data
+
+# Or rebuild with proper permissions
+docker-compose down
+docker-compose build --no-cache
+docker-compose up
 ```
 
 **Out of memory:**
 ```bash
 # Check memory usage
 free -h
+
+# Check container memory
+docker stats
 
 # Upgrade to larger droplet if needed
 ```
@@ -257,6 +290,10 @@ free -h
 ```bash
 # Restart container
 docker-compose restart
+
+# If still locked, stop all and restart
+docker-compose down
+docker-compose up -d
 ```
 
 **Lost WhatsApp session:**
@@ -265,6 +302,29 @@ docker-compose restart
 rm -rf data/.wwebjs_auth
 docker-compose restart
 docker-compose logs -f  # Scan new QR code
+```
+
+**Auth directory not persisting:**
+```bash
+# Verify volume mount
+docker-compose exec whatsapp-bot ls -la /app/data
+
+# Check if .wwebjs_auth exists
+docker-compose exec whatsapp-bot ls -la /app/data/.wwebjs_auth
+
+# Ensure host directory has proper structure
+mkdir -p ./data/.wwebjs_auth
+```
+
+**Container keeps restarting:**
+```bash
+# Check last 100 lines of logs
+docker-compose logs --tail=100
+
+# Common causes:
+# 1. Missing GEMINI_API_KEY in .env
+# 2. Chromium dependencies missing
+# 3. Insufficient memory
 ```
 
 ## 💵 Cost Optimization

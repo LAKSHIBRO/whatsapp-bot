@@ -51,22 +51,26 @@ A lightweight WhatsApp bot that uses AI (Google Gemini Flash) to respond to mess
 
 ## 🐳 Docker Deployment
 
-1. **Build and run with Docker Compose**
-   ```bash
-   docker-compose up -d
-   ```
+> [!IMPORTANT]
+> The Docker setup has been optimized for production deployment with proper Chromium dependencies and volume mounting. All authentication data persists in the `./data/` directory.
 
-2. **View logs and scan QR code**
-   ```bash
-   docker-compose logs -f
-   ```
+For detailed deployment instructions to Digital Ocean or any other cloud provider, see [DEPLOYMENT.md](DEPLOYMENT.md).
 
-3. **Manage the bot**
-   ```bash
-   docker-compose restart  # Restart
-   docker-compose down     # Stop
-   docker-compose logs -f  # View logs
-   ```
+**Quick Start with Docker:**
+```bash
+# Ensure data directories exist
+mkdir -p data/.wwebjs_auth
+
+# Configure environment
+cp .env.example .env
+# Edit .env and add your GEMINI_API_KEY
+
+# Build and run
+docker-compose up -d
+
+# View logs and scan QR code
+docker-compose logs -f
+```
 
 ## ☁️ Digital Ocean Deployment
 
