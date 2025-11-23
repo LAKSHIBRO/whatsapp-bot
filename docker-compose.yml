@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  whatsapp-bot:
+    build: .
+    container_name: whatsapp-ai-bot
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - ./data/.wwebjs_auth:/app/.wwebjs_auth
+      - ./data/conversations.db:/app/conversations.db
+    environment:
+      - NODE_ENV=production
