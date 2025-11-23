@@ -35,13 +35,13 @@ COPY . .
 RUN addgroup -g 1001 -S nodejs && \
     adduser -S nodejs -u 1001
 
-# Create data and auth directories with proper permissions BEFORE switching user
-RUN mkdir -p /app/data/.wwebjs_auth && \
+# Create auth directory with proper permissions BEFORE switching user
+RUN mkdir -p /app/.wwebjs_auth && \
     chown -R nodejs:nodejs /app && \
-    chmod -R 755 /app/data
+    chmod -R 755 /app/.wwebjs_auth
 
-# Create volume mount point for persistence
-VOLUME ["/app/data"]
+# Create volume mount point for session persistence
+VOLUME ["/app/.wwebjs_auth"]
 
 # Now switch to non-root user
 USER nodejs

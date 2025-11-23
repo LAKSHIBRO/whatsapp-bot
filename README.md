@@ -4,13 +4,13 @@ A lightweight WhatsApp bot that uses AI (Google Gemini Flash) to respond to mess
 
 ## ✨ Features
 
-- 🤖 AI-powered responses using Google Gemini 1.5 Flash
-- 💬 Per-user conversation context management
-- 💾 Lightweight SQLite database
-- 🔄 Automatic session persistence
+- 🤖 AI-powered responses using Google Gemini 2.5 Flash
+- 💬 Per-user conversation context management (in-memory)
+- 🔄 Automatic WhatsApp session persistence
 - 📱 Easy QR code authentication
 - 🐳 Docker support for easy deployment
-- 💰 Cost-effective (~$8-10/month total)
+- ⚡ Lightweight and simple - no database required
+- 💰 Cost-effective (~$6-8/month total)
 
 ## 📋 Prerequisites
 
@@ -52,14 +52,14 @@ A lightweight WhatsApp bot that uses AI (Google Gemini Flash) to respond to mess
 ## 🐳 Docker Deployment
 
 > [!IMPORTANT]
-> The Docker setup has been optimized for production deployment with proper Chromium dependencies and volume mounting. All authentication data persists in the `./data/` directory.
+> The Docker setup has been optimized for production deployment. Authentication data persists in the `./.wwebjs_auth/` directory.
 
 For detailed deployment instructions to Digital Ocean or any other cloud provider, see [DEPLOYMENT.md](DEPLOYMENT.md).
 
 **Quick Start with Docker:**
 ```bash
-# Ensure data directories exist
-mkdir -p data/.wwebjs_auth
+# Ensure auth directory exists
+mkdir -p .wwebjs_auth
 
 # Configure environment
 cp .env.example .env
@@ -123,14 +123,7 @@ Users can send these commands to the bot:
 npm run dev
 ```
 
-**Check database:**
-```bash
-# View conversations
-sqlite3 conversations.db "SELECT * FROM conversations LIMIT 10"
-
-# Count messages per user
-sqlite3 conversations.db "SELECT user_id, COUNT(*) FROM conversations GROUP BY user_id"
-```
+**Note:** Conversation history is stored in memory and will be cleared when the bot restarts.
 
 ## ⚠️ Important Notes
 
@@ -138,7 +131,9 @@ sqlite3 conversations.db "SELECT user_id, COUNT(*) FROM conversations GROUP BY u
 
 2. **Dedicated Number**: Use a dedicated phone number, not your personal WhatsApp account.
 
-3. **Session Persistence**: The `.wwebjs_auth` folder stores your session. Keep it backed up!
+3. **Session Persistence**: The `.wwebjs_auth` folder stores your WhatsApp session. Keep it backed up!
+
+4. **Conversation Memory**: Conversation history is stored in memory and will be cleared on bot restart. Each session starts fresh.
 
 4. **Rate Limiting**: WhatsApp may rate limit your bot if it sends too many messages.
 

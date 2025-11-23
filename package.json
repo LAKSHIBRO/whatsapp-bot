@@ -8,13 +8,17 @@
     "start": "node src/index.js",
     "dev": "node --watch src/index.js"
   },
-  "keywords": ["whatsapp", "bot", "ai", "gemini"],
+  "keywords": [
+    "whatsapp",
+    "bot",
+    "ai",
+    "gemini"
+  ],
   "author": "",
   "license": "MIT",
   "dependencies": {
     "whatsapp-web.js": "^1.24.0",
     "qrcode-terminal": "^0.12.0",
-    "better-sqlite3": "^11.5.0",
     "@google/generative-ai": "^0.21.0",
     "dotenv": "^16.4.5"
   }

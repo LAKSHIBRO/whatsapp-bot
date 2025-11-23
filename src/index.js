@@ -16,18 +16,11 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const projectRoot = join(__dirname, '..');
 
-// Create required directories
-const dataDir = join(projectRoot, 'data');
-const authDir = join(dataDir, '.wwebjs_auth');
+// Create WhatsApp authentication directory
+const authDir = join(projectRoot, '.wwebjs_auth');
 
 console.log('🔧 Setting up directories...');
-console.log(`📁 Data directory: ${dataDir}`);
 console.log(`🔐 Auth directory: ${authDir}`);
-
-if (!existsSync(dataDir)) {
-    mkdirSync(dataDir, { recursive: true });
-    console.log('✅ Created data directory');
-}
 
 if (!existsSync(authDir)) {
     mkdirSync(authDir, { recursive: true });
