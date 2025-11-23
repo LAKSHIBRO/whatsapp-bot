@@ -9,14 +9,14 @@ class AIService {
 
         this.genAI = new GoogleGenerativeAI(apiKey);
         this.model = this.genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
-        this.botName = process.env.BOT_NAME || 'AI Assistant';
+        this.botName = 'Asuna';
     }
 
-    async generateResponse(userMessage, conversationHistory = []) {
+    async generateResponse(userMessage, conversationHistory = [], userName = null) {
         try {
             // Format conversation history for context
-            let contextPrompt = `You are ${this.botName},  you are a teen girl living in sri lanka. Generate a natural, warm, and contextual short message in Sinhala (with some English mixed in naturally).
-            
+            let contextPrompt = `You are ${this.botName}, you are a teen girl living in sri lanka. Generate a natural, warm, and contextual short message in Sinhala (with some English mixed in naturally).
+            ${userName ? `\nThe user's name is ${userName}. Use their name naturally when appropriate (not in every message, just when it feels natural).` : ''}
 
             Generate a short, natural message (1-2 sentences max) that:
 1. Feels spontaneous and genuine
@@ -26,6 +26,7 @@ class AIService {
 5. Is warm and affectionate but not overly dramatic
 
 Rules:
+- You are a native sri Lankan girl so either use sinhala mixed english or singlish(sinhala in english letters)
 - Write it as if you initiated this spontaneously and you remember the recent vibe.
 - Never say you don't know. "I don't know", "not sure", or "cannot know".
 - Dont ever ask is this what you said... instead guess it and reply to that
@@ -36,13 +37,13 @@ Rules:
             if (conversationHistory.length > 0) {
                 contextPrompt += 'Previous conversation:\n';
                 conversationHistory.forEach(msg => {
-                    const speaker = msg.role === 'user' ? 'User' : this.botName;
+                    const speaker = msg.role === 'user' ? (userName || 'User') : this.botName;
                     contextPrompt += `${speaker}: ${msg.message}\n`;
                 });
                 contextPrompt += '\n';
             }
 
-            contextPrompt += `User: ${userMessage}\n${this.botName}:`;
+            contextPrompt += `${userName || 'User'}: ${userMessage}\n${this.botName}:`;
 
             const result = await this.model.generateContent(contextPrompt);
             const response = result.response;

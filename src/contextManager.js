@@ -6,6 +6,8 @@ class ContextManager {
     constructor() {
         // In-memory storage: Map of userId -> array of messages
         this.conversations = new Map();
+        // In-memory storage: Map of userId -> user name
+        this.userNames = new Map();
         this.maxMessages = parseInt(process.env.MAX_CONTEXT_MESSAGES) || 20;
 
         console.log('💾 Context Manager initialized (in-memory mode)');
@@ -79,11 +81,66 @@ class ContextManager {
     }
 
     /**
+     * Get user's name
+     * @param {string} userId - WhatsApp user ID
+     * @returns {string|null} User's name or null if not set
+     */
+    getUserName(userId) {
+        return this.userNames.get(userId) || null;
+    }
+
+    /**
+     * Set user's name
+     * @param {string} userId - WhatsApp user ID
+     * @param {string} name - User's name
+     */
+    setUserName(userId, name) {
+        this.userNames.set(userId, name);
+        console.log(`👤 Set name for ${userId}: ${name}`);
+    }
+
+    /**
+     * Extract name from user message using pattern matching
+     * Detects patterns like "my name is X", "I'm X", "call me X", etc.
+     * @param {string} message - User's message
+     * @returns {string|null} Extracted name or null
+     */
+    extractNameFromMessage(message) {
+        // Convert to lowercase for pattern matching
+        const lowerMessage = message.toLowerCase();
+
+        // Patterns to detect name introduction
+        const patterns = [
+            /(?:my name is|මගේ නම|මගෙ නම)\s+(\w+)/i,
+            /(?:i'm|i am|මම|මං)\s+(\w+)/i,
+            /(?:call me|මට කියන්න)\s+(\w+)/i,
+            /(?:this is|it's|මේ)\s+(\w+)/i,
+            /(?:නම|name)[\s:]+(\w+)/i
+        ];
+
+        for (const pattern of patterns) {
+            const match = message.match(pattern);
+            if (match && match[1]) {
+                // Capitalize first letter
+                const name = match[1].charAt(0).toUpperCase() + match[1].slice(1).toLowerCase();
+                // Ignore common words that might be mistakenly captured
+                const ignoreWords = ['the', 'a', 'an', 'is', 'was', 'are', 'were', 'මම', 'මං', 'එක'];
+                if (!ignoreWords.includes(match[1].toLowerCase())) {
+                    return name;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Close method for compatibility (no-op for in-memory storage)
      */
     close() {
         console.log('💾 Context Manager closed');
         this.conversations.clear();
+        this.userNames.clear();
     }
 }
 

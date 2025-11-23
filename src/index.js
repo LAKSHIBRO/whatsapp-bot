@@ -109,7 +109,28 @@ client.on('message', async (message) => {
             return;
         }
 
-        // Get conversation context
+        // Handle /name command to set user's name manually
+        if (userMessage.toLowerCase().startsWith('/name ')) {
+            const name = userMessage.substring(6).trim();
+            if (name) {
+                contextManager.setUserName(userId, name);
+                await message.reply(`✨ Nice to meet you, ${name}! මට ඔයාව මතක් තියෙන්නම්.`);
+                console.log(`👤 Name set manually for ${userId}: ${name}`);
+            } else {
+                await message.reply('Please provide your name like: /name YourName');
+            }
+            return;
+        }
+
+        // Try to extract name from user message
+        const extractedName = contextManager.extractNameFromMessage(userMessage);
+        if (extractedName && !contextManager.getUserName(userId)) {
+            contextManager.setUserName(userId, extractedName);
+            console.log(`👤 Automatically detected name: ${extractedName}`);
+        }
+
+        // Get user's name and conversation context
+        const userName = contextManager.getUserName(userId);
         const conversationHistory = contextManager.getContext(userId);
 
         // Save user message
@@ -118,8 +139,8 @@ client.on('message', async (message) => {
         // Show typing indicator
         chat.sendStateTyping();
 
-        // Generate AI response
-        const aiResponse = await aiService.generateResponse(userMessage, conversationHistory);
+        // Generate AI response with user's name if available
+        const aiResponse = await aiService.generateResponse(userMessage, conversationHistory, userName);
 
         // Save bot response
         contextManager.saveMessage(userId, 'assistant', aiResponse);

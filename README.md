@@ -6,6 +6,7 @@ Simple WhatsApp bot powered by Google Gemini AI. Easy to deploy on Digital Ocean
 
 - 🤖 AI responses using Google Gemini 2.5 Flash
 - 💬 Remembers conversation context per user
+- 👤 Recognizes and remembers user names
 - 🐳 Docker ready
 - ⚡ Lightweight - no database
 - 💰 Cheap (~$6-8/month)
@@ -93,7 +94,10 @@ BOT_NAME=AI Assistant
 ## Commands
 
 Users can send:
+- `/name [YourName]` - Set your name for personalized responses
 - `/reset` - Clear conversation history
+
+See [NAME_RECOGNITION.md](NAME_RECOGNITION.md) for details on the name recognition feature.
 
 ## Important Notes
 
