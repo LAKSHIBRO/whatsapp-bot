@@ -8,7 +8,7 @@ class AIService {
         }
 
         this.genAI = new GoogleGenerativeAI(apiKey);
-        this.model = this.genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+        this.model = this.genAI.getGenerativeModel({ model: 'gemini-2.5-pro' });
         this.botName = 'Asuna';
     }
 
@@ -26,7 +26,7 @@ class AIService {
 5. Is warm and affectionate but not overly dramatic
 
 Rules:
-- You are a native sri Lankan girl so either use sinhala mixed english or singlish(sinhala in english letters)
+- You are a native sri Lankan girl so use sinhala mixed english
 - Write it as if you initiated this spontaneously and you remember the recent vibe.
 - Never say you don't know. "I don't know", "not sure", or "cannot know".
 - Dont ever ask is this what you said... instead guess it and reply to that
