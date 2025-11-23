@@ -12,8 +12,7 @@ RUN apk add --no-cache \
     font-noto-emoji \
     fontconfig \
     udev \
-    dbus \
-    su-exec
+    dbus
 
 # Tell Puppeteer to use system Chromium
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
@@ -44,12 +43,8 @@ RUN mkdir -p /app/data/.wwebjs_auth && \
 # Create volume mount point for persistence
 VOLUME ["/app/data"]
 
-# Copy entrypoint script
-COPY docker-entrypoint.sh /usr/local/bin/
-RUN chmod +x /usr/local/bin/docker-entrypoint.sh
-
-# Use entrypoint to fix permissions before starting app
-ENTRYPOINT ["docker-entrypoint.sh"]
+# Now switch to non-root user
+USER nodejs
 
 # Start the bot
 CMD ["npm", "start"]
