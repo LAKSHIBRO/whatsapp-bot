@@ -1,146 +1,119 @@
 # WhatsApp AI Bot
 
-A lightweight WhatsApp bot that uses AI (Google Gemini Flash) to respond to messages while maintaining conversation context for each user. Designed for cost-effective deployment on Digital Ocean.
+Simple WhatsApp bot powered by Google Gemini AI. Easy to deploy on Digital Ocean.
 
-## ✨ Features
+## Features
 
-- 🤖 AI-powered responses using Google Gemini 2.5 Flash
-- 💬 Per-user conversation context management (in-memory)
-- 🔄 Automatic WhatsApp session persistence
-- 📱 Easy QR code authentication
-- 🐳 Docker support for easy deployment
-- ⚡ Lightweight and simple - no database required
-- 💰 Cost-effective (~$6-8/month total)
+- 🤖 AI responses using Google Gemini 2.5 Flash
+- 💬 Remembers conversation context per user
+- 🐳 Docker ready
+- ⚡ Lightweight - no database
+- 💰 Cheap (~$6-8/month)
 
-## 📋 Prerequisites
+## Quick Start
 
-- Node.js 20+ (for local development)
-- A dedicated phone number for WhatsApp (not your personal number)
-- Google Gemini API key ([Get one free](https://makersuite.google.com/app/apikey))
-- Digital Ocean account (for hosting)
+### 1. Install Dependencies
 
-## 🚀 Quick Start (Local Development)
-
-1. **Clone and install dependencies**
-   ```bash
-   cd whatsapp-ai-bot
-   npm install
-   ```
-
-2. **Configure environment**
-   ```bash
-   cp .env.example .env
-   # Edit .env and add your GEMINI_API_KEY
-   ```
-
-3. **Start the bot**
-   ```bash
-   npm start
-   ```
-
-4. **Scan QR code**
-   - A QR code will appear in your terminal
-   - Open WhatsApp on your phone
-   - Go to Settings → Linked Devices → Link a Device
-   - Scan the QR code
-
-5. **Test it**
-   - Send a message to the bot's WhatsApp number from another account
-   - The bot will respond with an AI-generated message
-   - Send follow-up messages to test context retention
-
-## 🐳 Docker Deployment
-
-> [!IMPORTANT]
-> The Docker setup has been optimized for production deployment. Authentication data persists in the `./.wwebjs_auth/` directory.
-
-For detailed deployment instructions to Digital Ocean or any other cloud provider, see [DEPLOYMENT.md](DEPLOYMENT.md).
-
-**Quick Start with Docker:**
 ```bash
-# Ensure auth directory exists
-mkdir -p .wwebjs_auth
+npm install
+```
 
-# Configure environment
+### 2. Setup Environment
+
+```bash
 cp .env.example .env
-# Edit .env and add your GEMINI_API_KEY
+```
 
-# Build and run
+Edit `.env` and add your Gemini API key:
+```env
+GEMINI_API_KEY=your_key_here
+```
+
+Get a free API key: https://makersuite.google.com/app/apikey
+
+### 3. Run the Bot
+
+```bash
+npm start
+```
+
+### 4. Connect WhatsApp
+
+1. QR code appears in terminal
+2. Open WhatsApp on your phone
+3. Go to Settings → Linked Devices → Link a Device
+4. Scan the QR code
+5. Done! Send a message to test
+
+## Docker Deployment
+
+### Local Docker
+
+```bash
+# Setup environment
+cp .env.example .env
+# Add your GEMINI_API_KEY to .env
+
+# Start
 docker-compose up -d
 
-# View logs and scan QR code
+# View logs and scan QR
 docker-compose logs -f
 ```
 
-## ☁️ Digital Ocean Deployment
+**Note**: Session data is stored in a Docker named volume `wwebjs_auth`.
 
-See [DEPLOYMENT.md](DEPLOYMENT.md) for detailed Digital Ocean setup instructions.
+### Digital Ocean
 
-**Quick deploy:**
+See [DEPLOYMENT.md](DEPLOYMENT.md) for full instructions.
+
+Quick version:
 ```bash
 # Set your droplet IP
 export DROPLET_IP=your-droplet-ip
 
-# Run deployment script
+# Deploy
 chmod +x deploy.sh
 ./deploy.sh
 ```
 
-## ⚙️ Configuration
+## Configuration
 
-Edit `.env` file:
+Edit `.env`:
 
 ```env
-# Required: Your Gemini API key
+# Required
 GEMINI_API_KEY=your_api_key_here
 
-# Optional: Context settings
+# Optional
 MAX_CONTEXT_MESSAGES=20
-
-# Optional: Bot personality
 BOT_NAME=AI Assistant
 ```
 
-## 💬 Special Commands
+## Commands
 
-Users can send these commands to the bot:
+Users can send:
+- `/reset` - Clear conversation history
 
-- `/reset` - Clear conversation history and start fresh
+## Important Notes
 
-## 💰 Cost Breakdown
+⚠️ **Unofficial API**: Uses `whatsapp-web.js` (violates WhatsApp ToS). Use at your own risk.
 
-**Digital Ocean:** $6/month (Basic Droplet, 1GB RAM)  
-**AI API (Gemini Flash):**
-- ~1000 messages/day = 30,000/month
-- ~$2-3/month at current pricing
+⚠️ **Dedicated Number**: Use a separate phone number, not your personal WhatsApp.
 
-**Total: ~$8-10/month**
+⚠️ **Session Data**: 
+- Local: `.wwebjs_auth/` folder stores your WhatsApp session
+- Docker: Stored in `wwebjs_auth` named volume
 
-## 🛠️ Development
+⚠️ **Conversation Memory**: Stored in RAM. Cleared when bot restarts.
 
-**Run with auto-reload:**
+## Development
+
 ```bash
+# Run with auto-reload
 npm run dev
 ```
 
-**Note:** Conversation history is stored in memory and will be cleared when the bot restarts.
-
-## ⚠️ Important Notes
-
-1. **Unofficial API**: This uses `whatsapp-web.js` which violates WhatsApp's Terms of Service. For production, consider the official WhatsApp Business API.
-
-2. **Dedicated Number**: Use a dedicated phone number, not your personal WhatsApp account.
-
-3. **Session Persistence**: The `.wwebjs_auth` folder stores your WhatsApp session. Keep it backed up!
-
-4. **Conversation Memory**: Conversation history is stored in memory and will be cleared on bot restart. Each session starts fresh.
-
-4. **Rate Limiting**: WhatsApp may rate limit your bot if it sends too many messages.
-
-## 📝 License
+## License
 
 MIT
-
-## 🤝 Contributing
-
-Contributions welcome! Feel free to open issues or submit PRs.

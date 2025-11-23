@@ -40,9 +40,6 @@ RUN mkdir -p /app/.wwebjs_auth && \
     chown -R nodejs:nodejs /app && \
     chmod -R 755 /app/.wwebjs_auth
 
-# Create volume mount point for session persistence
-VOLUME ["/app/.wwebjs_auth"]
-
 # Now switch to non-root user
 USER nodejs
 

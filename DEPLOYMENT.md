@@ -1,45 +1,37 @@
 # Digital Ocean Deployment Guide
 
-Complete guide for deploying the WhatsApp AI Bot on Digital Ocean.
+Simple guide to deploy WhatsApp AI bot on Digital Ocean.
 
-## 💰 Recommended Droplet
+## Prerequisites
 
-**Basic Droplet - $6/month**
-- 1 GB RAM
-- 1 vCPU
-- 25 GB SSD
-- Ubuntu 22.04 LTS
+- Digital Ocean account
+- SSH key setup
+- Gemini API key
 
-This is sufficient for moderate usage (up to ~5000 messages/day).
+## Step 1: Create Droplet
 
-## 🚀 Initial Setup
-
-### 1. Create Droplet
-
-1. Log into [Digital Ocean](https://digitalocean.com)
-2. Click **Create** → **Droplets**
+1. Go to Digital Ocean dashboard
+2. Create → Droplets
 3. Choose:
-   - **Image**: Ubuntu 22.04 LTS
-   - **Droplet Type**: Basic
-   - **CPU Options**: Regular ($6/month)
-   - **Region**: Closest to your users
-   - **Authentication**: SSH keys (recommended)
-4. Click **Create Droplet**
+   - **Image**: Ubuntu 24.04 LTS
+   - **Plan**: Basic ($6/month, 1GB RAM)
+   - **Region**: Choose closest to you
+   - **SSH Key**: Add your SSH key
+4. Create Droplet
+5. Note the IP address
 
-### 2. Initial Server Setup
+## Step 2: Setup Server
 
 SSH into your droplet:
 ```bash
 ssh root@your-droplet-ip
 ```
 
-Update system:
-```bash
-apt update && apt upgrade -y
-```
-
 Install Docker:
 ```bash
+# Update system
+apt update && apt upgrade -y
+
 # Install Docker
 curl -fsSL https://get.docker.com -o get-docker.sh
 sh get-docker.sh
@@ -47,310 +39,199 @@ sh get-docker.sh
 # Install Docker Compose
 apt install docker-compose -y
 
-# Start Docker on boot
-systemctl enable docker
+# Verify
+docker --version
+docker-compose --version
 ```
 
-Create app directory:
-```bash
-mkdir -p /opt/whatsapp-ai-bot
-cd /opt/whatsapp-ai-bot
-```
+## Step 3: Deploy Bot
 
-### 3. Deploy Application
+### Option A: Using Deploy Script (Recommended)
 
-**Option A: Using Git (Recommended)**
+From your local machine:
 
 ```bash
-cd /opt/whatsapp-ai-bot
+# Set droplet IP
+export DROPLET_IP=your-droplet-ip
 
-# Clone your repository
-git clone <your-repo-url> .
-
-# Or initialize and pull
-git init
-git remote add origin <your-repo-url>
-git pull origin main
+# Run deployment script
+chmod +x deploy.sh
+./deploy.sh
 ```
 
-**Option B: Manual Upload**
+The script will:
+- Copy files to server
+- Create directories
+- Setup environment
+- Build and start Docker container
 
-Upload files using SCP from your local machine:
+### Option B: Manual Deployment
+
+From your local machine:
+
 ```bash
-scp -r whatsapp-ai-bot/* root@your-droplet-ip:/opt/whatsapp-ai-bot/
+# Copy files to server
+scp -r * root@your-droplet-ip:/root/whatsapp-bot/
+
+# SSH into server
+ssh root@your-droplet-ip
+
+# Navigate to bot directory
+cd /root/whatsapp-bot
+
+# Setup environment
+cp .env.example .env
+nano .env  # Add your GEMINI_API_KEY
+
+# Create auth directory
+mkdir -p .wwebjs_auth
+
+# Start bot
+docker-compose up -d
 ```
 
-### 4. Configure Environment
+## Step 4: Scan QR Code
 
-Create `.env` file on the droplet:
+View logs and scan QR:
 ```bash
-cd /opt/whatsapp-ai-bot
-nano .env
+docker-compose logs -f
 ```
 
-Add your configuration:
-```env
-GEMINI_API_KEY=your_actual_api_key_here
-MAX_CONTEXT_MESSAGES=20
-BOT_NAME=AI Assistant
+1. QR code appears in logs
+2. Open WhatsApp on phone
+3. Settings → Linked Devices → Link a Device
+4. Scan the QR code from terminal
+5. Wait for "WhatsApp Bot is ready!" message
+
+Press `Ctrl+C` to exit logs (bot keeps running).
+
+## Managing the Bot
+
+### View Logs
+```bash
+docker-compose logs -f
 ```
 
-Save with `Ctrl+X`, `Y`, `Enter`.
+### Restart Bot
+```bash
+docker-compose restart
+```
 
-### 5. Start the Bot
+### Stop Bot
+```bash
+docker-compose down
+```
 
-Build and start:
+### Start Bot
 ```bash
 docker-compose up -d
 ```
 
-View logs and QR code:
+### Update Code
 ```bash
-docker-compose logs -f
-```
-
-**Scan the QR code with your WhatsApp to link the device.**
-
-## 🔧 Management Commands
-
-```bash
-# View live logs
-docker-compose logs -f
-
-# Restart bot
-docker-compose restart
-
 # Stop bot
 docker-compose down
 
-# Rebuild after code changes
-docker-compose down
-docker-compose build
-docker-compose up -d
+# Pull latest code or make changes
+# ...
 
-# View running containers
-docker ps
-
-# Access container shell
-docker-compose exec whatsapp-bot sh
+# Rebuild and start
+docker-compose up -d --build
 ```
 
-## 💾 Backup & Persistence
+## Troubleshooting
 
-Important files are stored in `./data/`:
-- `.wwebjs_auth/` - WhatsApp session (needed to stay logged in)
-- `conversations.db` - User conversation history
-
-**Backup regularly:**
+### Bot won't start
 ```bash
-# Create backup
-tar -czf backup-$(date +%Y%m%d).tar.gz data/
-
-# Download backup to local machine
-scp root@your-droplet-ip:/opt/whatsapp-ai-bot/backup-*.tar.gz ./
-```
-
-**Restore:**
-```bash
-# Upload backup
-scp backup-20240101.tar.gz root@your-droplet-ip:/opt/whatsapp-ai-bot/
-
-# Extract
-tar -xzf backup-20240101.tar.gz
-```
-
-## 🔒 Security Best Practices
-
-1. **Create non-root user:**
-   ```bash
-   adduser botadmin
-   usermod -aG docker botadmin
-   su - botadmin
-   ```
-
-2. **Configure firewall:**
-   ```bash
-   ufw allow OpenSSH
-   ufw enable
-   ```
-
-3. **Disable root SSH login:**
-   ```bash
-   nano /etc/ssh/sshd_config
-   # Set: PermitRootLogin no
-   systemctl restart sshd
-   ```
-
-4. **Keep API keys secure:**
-   - Never commit `.env` to git
-   - Use environment variables
-   - Rotate keys periodically
-
-## 📊 Monitoring
-
-**Check bot status:**
-```bash
-docker-compose ps
-```
-
-**Monitor resource usage:**
-```bash
-docker stats
-```
-
-**Check disk space:**
-```bash
-df -h
-```
-
-**Monitor logs:**
-```bash
-# Last 50 lines
-docker-compose logs --tail=50
-
-# Follow logs
-docker-compose logs -f
-
-# Search logs
-docker-compose logs | grep "error"
-```
-
-## 🔄 Auto-restart on Failure
-
-Docker Compose is configured with `restart: unless-stopped`, so:
-- Bot auto-restarts if it crashes
-- Bot starts automatically after server reboot
-
-Verify:
-```bash
-docker-compose config | grep restart
-```
-
-## 🐛 Troubleshooting
-
-**Bot won't start:**
-```bash
-# Check logs for detailed error messages
+# Check logs
 docker-compose logs
 
-# Rebuild from scratch
-docker-compose down
-docker-compose build --no-cache
-docker-compose up
+# Check if port is in use
+netstat -tulpn | grep docker
+
+# Restart Docker
+systemctl restart docker
 ```
 
-**Chromium/Chrome failed to start:**
+### QR code not appearing
 ```bash
-# Verify Chromium is installed
-docker-compose exec whatsapp-bot chromium-browser --version
-
-# Check if shared memory is configured
-docker-compose config | grep shm_size
-
-# If shm_size is missing, add to docker-compose.yml:
-# shm_size: '2gb'
-
-# Restart with increased verbosity
-docker-compose down
-docker-compose up
+# Remove old session and restart
+rm -rf .wwebjs_auth
+docker-compose restart
+docker-compose logs -f
 ```
 
-**QR code not showing:**
-```bash
-# View logs with timestamps
-docker-compose logs -f --timestamps
-
-# Check if bot is stuck at initialization
-docker-compose exec whatsapp-bot ps aux
-```
-
-**Permission denied errors:**
-```bash
-# Fix ownership of data directory on host
-sudo chown -R $USER:$USER ./data
-
-# Or rebuild with proper permissions
-docker-compose down
-docker-compose build --no-cache
-docker-compose up
-```
-
-**Out of memory:**
+### Out of memory
 ```bash
 # Check memory usage
 free -h
 
-# Check container memory
-docker stats
-
-# Upgrade to larger droplet if needed
-```
-
-**Database locked:**
-```bash
-# Restart container
+# Restart bot
 docker-compose restart
-
-# If still locked, stop all and restart
-docker-compose down
-docker-compose up -d
 ```
 
-**Lost WhatsApp session:**
+### WhatsApp disconnected
 ```bash
-# Remove auth and re-scan QR
-rm -rf data/.wwebjs_auth
+# Check logs
+docker-compose logs -f
+
+# If needed, rescan QR
+rm -rf .wwebjs_auth
 docker-compose restart
-docker-compose logs -f  # Scan new QR code
 ```
 
-**Auth directory not persisting:**
+## Firewall Setup (Optional)
+
 ```bash
-# Verify volume mount
-docker-compose exec whatsapp-bot ls -la /app/data
-
-# Check if .wwebjs_auth exists
-docker-compose exec whatsapp-bot ls -la /app/data/.wwebjs_auth
-
-# Ensure host directory has proper structure
-mkdir -p ./data/.wwebjs_auth
+# Enable firewall
+ufw allow OpenSSH
+ufw allow 80/tcp
+ufw allow 443/tcp
+ufw enable
 ```
 
-**Container keeps restarting:**
+## Backup Session
+
+Backup WhatsApp session data:
+
 ```bash
-# Check last 100 lines of logs
-docker-compose logs --tail=100
+# From server
+cd /root/whatsapp-bot
+tar -czf session-backup.tar.gz .wwebjs_auth
 
-# Common causes:
-# 1. Missing GEMINI_API_KEY in .env
-# 2. Chromium dependencies missing
-# 3. Insufficient memory
+# Download to local machine
+scp root@your-droplet-ip:/root/whatsapp-bot/session-backup.tar.gz .
 ```
 
-## 💵 Cost Optimization
+Restore session:
+```bash
+# Upload to server
+scp session-backup.tar.gz root@your-droplet-ip:/root/whatsapp-bot/
 
-1. Use the $6/month Basic droplet (sufficient for most use cases)
-2. Gemini Flash is the cheapest AI option (~$2-3/month)
-3. Monitor usage and set API quotas
-4. Clean old conversation data periodically:
-   ```bash
-   docker-compose exec whatsapp-bot sh
-   sqlite3 conversations.db "DELETE FROM conversations WHERE created_at < datetime('now', '-30 days')"
-   ```
+# On server
+cd /root/whatsapp-bot
+tar -xzf session-backup.tar.gz
+docker-compose restart
+```
 
-## 📈 Scaling
+## Cost Estimate
 
-If you need to handle more messages:
+- **Droplet**: $6/month (1GB RAM)
+- **Gemini API**: ~$2/month (moderate usage)
+- **Total**: ~$8/month
 
-1. **Upgrade droplet**: $12/month (2GB RAM) or $18/month (4GB RAM)
-2. **Add Redis** for faster context retrieval
-3. **Use official WhatsApp Business API** for enterprise needs
-4. **Load balancing** with multiple bots across numbers
+## Security Notes
 
-## 🎯 Next Steps
+⚠️ **Change default SSH port**
+⚠️ **Setup firewall**
+⚠️ **Use non-root user** (optional but recommended)
+⚠️ **Keep `.env` file secure**
+⚠️ **Regular backups of `.wwebjs_auth/`**
 
-- [ ] Set up automated backups with cron
-- [ ] Configure monitoring/alerts
-- [ ] Set up domain name (optional)
-- [ ] Add logging aggregation (optional)
-- [ ] Document your custom commands
+## Support
+
+If bot stops working:
+1. Check logs: `docker-compose logs`
+2. Restart: `docker-compose restart`
+3. Rescan QR: Delete `.wwebjs_auth` and restart
+4. Check server resources: `htop` or `free -h`

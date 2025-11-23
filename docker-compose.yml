@@ -8,8 +8,11 @@ services:
     env_file:
       - .env
     volumes:
-      # Mount auth directory for WhatsApp session persistence
-      - ./.wwebjs_auth:/app/.wwebjs_auth
+      # Use named volume for proper permissions
+      - wwebjs_auth:/app/.wwebjs_auth
     environment:
       - NODE_ENV=production
     shm_size: '2gb' # Shared memory for Chrome/Chromium
+
+volumes:
+  wwebjs_auth:
