@@ -25,17 +25,18 @@ RUN npm ci --only=production
 # Copy application files
 COPY . .
 
-# Create data directory for persistence
-RUN mkdir -p /app/data
+# Run as non-root user - create user first
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nodejs -u 1001
+
+# Create data directory and set ownership BEFORE switching user
+RUN mkdir -p /app/data && \
+    chown -R nodejs:nodejs /app
 
 # Create volume mount point for persistence
 VOLUME ["/app/data"]
 
-# Run as non-root user
-RUN addgroup -g 1001 -S nodejs && \
-    adduser -S nodejs -u 1001 && \
-    chown -R nodejs:nodejs /app
-
+# Now switch to non-root user
 USER nodejs
 
 # Start the bot
