@@ -84,12 +84,6 @@ client.on('auth_failure', (msg) => {
 // Handle incoming messages
 client.on('message', async (message) => {
     try {
-        // Ignore group messages and status updates
-        const chat = await message.getChat();
-        if (chat.isGroup) {
-            return;
-        }
-
         // Get sender info
         const userId = message.from;
         const userMessage = message.body;
